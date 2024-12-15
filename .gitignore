@@ -3,3 +3,8 @@ text_paper*
 podcast_*
 __pycache__/*
 __pycache__/
+logs/*
+outputs/*
+temp/*
+uploads/*
+config.json

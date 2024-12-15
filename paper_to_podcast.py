@@ -1,58 +1,71 @@
-import argparse
 import os
-from templates import enhance_prompt, initial_dialogue_prompt, plan_prompt
-from dotenv import load_dotenv
-from langchain_core.output_parsers import StrOutputParser
-from openai import OpenAI
-from langchain_openai import ChatOpenAI
-from utils.script import generate_script, parse_script_plan
-from utils.audio_gen import generate_podcast
+from utils.script import generate_script
+from utils.fish_audio_gen import generate_podcast
+from utils.custom_chat import CustomChatModel
+import config
+from utils.logger import logger
 
-# Load environment variables from a .env file
-load_dotenv()
+def process_paper(pdf_path, progress_callback=None):
+    """
+    处理PDF文件并生成播客
+    progress_callback: 回调函数，用于更新进度
+    """
+    try:
+        logger.info(f"开始处理文件: {os.path.basename(pdf_path)}")
+        
+        if progress_callback:
+            progress_callback(0, "正在初始化...")
+        
+        # 从配置文件获取API密钥
+        api_key = config.get_api_key()
+        if not api_key:
+            logger.error("未找到API密钥")
+            raise ValueError("未找到API密钥")
+        
+        # 初始化模型
+        if progress_callback:
+            progress_callback(10, "正在初始化LLM模型...")
+        logger.info("初始化LLM模型")
+        
+        # 初始化聊天模型
+        llm = CustomChatModel(api_key=api_key, model="gpt-4o-mini")
+        
+        logger.info("开始生成脚本")
+        script = generate_script(pdf_path, llm)
+        
+        # 生成音频
+        logger.info("开始生成音频")
+        generate_podcast(script, api_key)
+        
+        if progress_callback:
+            progress_callback(100, "处理完成！")
+        logger.info("任务完成")
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"处理失败: {str(e)}")
+        if progress_callback:
+            progress_callback(0, f"处理失败: {str(e)}")
+        raise
 
-# Retrieve the OpenAI API key from the environment variables
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-# Check if the keys were retrieved successfully
-if OPENAI_API_KEY:
-    print(f"API Key retrieved successfully")
-else:
-    print("API Key not found")
-
-# Initialize the OpenAI API client
-client = OpenAI(api_key=OPENAI_API_KEY)
-
-# Initialize the ChatOpenAI model
-llm = ChatOpenAI(model="gpt-4o-mini")
-
-# chains
-chains = {
-    "plan_script_chain": plan_prompt | llm | parse_script_plan,
-    "initial_dialogue_chain": initial_dialogue_prompt | llm | StrOutputParser(),
-    "enhance_chain": enhance_prompt | llm | StrOutputParser(),
-}
-
-
-def main(pdf_path):
-    # Step 1: Generate the podcast script from the PDF
-    print("Generating podcast script...")
-    script = generate_script(pdf_path, chains,llm)
-    print("Podcast script generation complete!")
-
-    print("Generating podcast audio files...")
-    # Step 2: Generate the podcast audio files and merge them
-    generate_podcast(script, client)
-    print("Podcast generation complete!")
-
+def main():
+    try:
+        logger.info("开始处理文档")
+        import argparse
+        parser = argparse.ArgumentParser(description="从研究论文生成播客。")
+        parser.add_argument("pdf_path", type=str, help="研究论文PDF文件的路径。")
+        args = parser.parse_args()
+        process_paper(args.pdf_path)
+        
+        logger.info("开始生成音频")
+        # 音频生成代码...
+        
+        logger.info("处理完成")
+        
+    except Exception as e:
+        logger.error(f"程序运行出错: {str(e)}", exc_info=True)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Generate a podcast from a research paper."
-    )
-    parser.add_argument(
-        "pdf_path", type=str, help="Path to the research paper PDF file."
-    )
-
-    args = parser.parse_args()
-    main(args.pdf_path)
+    logger.info("开始运行 Paper to Podcast 转换程序")
+    main()

@@ -28,7 +28,7 @@ Example of a structure for the podcast:
 ...
 - bullet point n
 The paper: {paper}
-The podcast plan in titles and bullet points:""")
+The podcast plan in titles and bullet points:（response in Chinese）""")
 
 discuss_prompt_template = ChatPromptTemplate.from_template("""You are a very clever scriptwriter of podcast discussions. You will be given a plan for a section of the middle of a podcast that already started involving 3 persons discussing about the content of a research paper. Your task will be to generate a brief dialogue for the podcast talking about the given section, do not include voice effects, and do not make an introduction. The dialogue should be engaging, interactive, enthusiastic and have very clever transitions and twists. The dialogue should follow the structure of the plan. The podcast involves the following persons:
 - The host: he will present the paper and its details in a very engaging way. very professional, friendly, warm and enthusiastic.
@@ -50,7 +50,7 @@ Expert: I think that ...
 Section plan: {section_plan}
 Previous dialogue (to avoid repetitions): {previous_dialogue}
 Additional context:{additional_context}
-Brief section dialogue:""")
+Brief section dialogue:（response in Chinese）""")
 
 initial_dialogue_prompt = ChatPromptTemplate.from_template("""You are a very clever scriptwriter of podcast introductions. You will be given the title of a paper and a brief glimpse of the content of a research paper. Avoid using sound effects, only text. Avoid finishing with the host, finish the dialogue with the expert. Your task will be to generate an engaging and enthusiastic introduction for the podcast. The introduction should be captivating, interactive, and should make the listeners eager to hear the discussion. The introduction of the podcast should have 3 interactions only. The podcast involves the following persons:
 - The host: he will present the paper and its details in a very engaging way. very professional, friendly, warm and enthusiastic.
@@ -65,7 +65,7 @@ Host: Hello everyone, today we have a very interesting paper to discuss ...
 Expert: I would like to add ...
 Learner: I have a question about ...
 Content of the paper: {paper_head}
-Brief 3 interactions introduction:""")
+Brief 3 interactions introduction:（response in Chinese）""")
 
 enhance_prompt = ChatPromptTemplate.from_template("""You are a very clever scriptwriter of podcast discussions. You will be given a script for a podcast involving 3 persons discussing about the content of a research paper. Your task will be to enhance the script by removing audio effects mentions and reducing repetition and redundancy. Don't mention sound effects, laughing, chuckling or any other audio effects between brackets. The script should only contain what the persons are saying and not what are they doing or how they are saying it. Enhance the transitions and the twists, and reduce repetition and redundancy.
 The draft script{draft_script}
